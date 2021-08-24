@@ -6,6 +6,9 @@ from minsait.ttaa.datio.common.naming.PlayerInput import *
 from minsait.ttaa.datio.common.naming.PlayerOutput import *
 from minsait.ttaa.datio.utils.Writer import Writer
 
+from minsait.ttaa.datio.common.naming.PlayerInput import *
+from minsait.ttaa.datio.common.naming.read_columns import *
+
 
 class Transformer(Writer):
     def __init__(self, spark: SparkSession):
@@ -80,3 +83,42 @@ class Transformer(Writer):
 
         df = df.withColumn(catHeightByPosition.name, rule)
         return df
+
+    # Metodos para el test diagnostico
+    def select_colums(dataframe):
+        df_select_colums = dataframe.select(short_name.column(),
+                                            long_name.column(),
+                                            age.column(),
+                                            height_cm.column(),
+                                            weight_kg.column(),
+                                            nationality.column(),
+                                            club_name.column(),
+                                            overall.column(),
+                                            potential.column(),
+                                            team_position.column()
+                                            )
+
+        return df_select_colums
+
+    def calculate_potential_overall(df):
+        df_potential_vs_overall = df.withColumn("potential_vs_overall",
+                                                f.round(df.potential / df.overall, 4))
+        return df_potential_vs_overall
+
+    def window_function(df_fill):
+        windowSpec = Window.partitionBy(nationality.column(),
+                                        team_position.column()
+                                        ) \
+            .orderBy(overall.column())
+        df_partition = df_fill.withColumn("player_cat", f.when(f.rank().over(windowSpec).between(1, 3), "A") \
+                                          .when(f.rank().over(windowSpec).between(3, 5), "B") \
+                                          .when(f.rank().over(windowSpec).between(6, 10), "C") \
+                                          .otherwise("D"))
+        return df_partition
+
+    def filter_columns(df_rank):
+        df_filter = df_rank.filter(((df_rank.player_cat == "A") | (df_rank.player_cat == "B"))
+                            | ((df_rank.player_cat == "C") & (df_rank.potential_vs_overall > 1.15))
+                            | ((df_rank.player_cat == "D") & (df_rank.potential_vs_overall > 1.25))
+                            )
+        return df_filter

@@ -4,7 +4,9 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <content url="file://C:/spark/spark-2.4.3-bin-hadoop2.7/python/pyspark/python/pyspark" />
+    <content url="jar://C:/spark/spark-2.4.3-bin-hadoop2.7/python/lib/py4j-0.10.7-src.zip!/" />
+    <orderEntry type="jdk" jdkName="Python 3.6 (diagnostico_pyspark)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
